@@ -13,6 +13,7 @@ MODEL_ZIP_URL = "https://drive.google.com/uc?id=1hu7pzjNYaQewda2mKLM29L4qeS19g8D
 MODEL_DIR = "models"
 
 if not os.path.exists(MODEL_DIR):
+    os.makedirs(MODEL_DIR, exist_ok=True)
     print("⬇️ Downloading model from Drive...")
     urllib.request.urlretrieve(MODEL_ZIP_URL, "models.zip")
 
@@ -22,8 +23,21 @@ if not os.path.exists(MODEL_DIR):
     os.remove("models.zip")
     print("✅ Model downloaded and extracted")
 
-model = joblib.load("models/fake_news_model.pkl")
-vectorizer = joblib.load("models/vectorizer.pkl")
+# 🔥 FIND ACTUAL MODEL PATH (AUTO FIX)
+model_path = None
+vectorizer_path = None
+
+for root, dirs, files in os.walk(MODEL_DIR):
+    if "fake_news_model.pkl" in files:
+        model_path = os.path.join(root, "fake_news_model.pkl")
+    if "vectorizer.pkl" in files:
+        vectorizer_path = os.path.join(root, "vectorizer.pkl")
+
+if not model_path or not vectorizer_path:
+    raise FileNotFoundError("Model files not found after extraction")
+
+model = joblib.load(model_path)
+vectorizer = joblib.load(vectorizer_path)
 
 # -----------------------------
 # Rule-based check
